@@ -1,6 +1,7 @@
-// webpack.base.js
 const path = require('path')
+const webpack = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin')
+// const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 
 module.exports = {
   entry: path.join(__dirname, '../src/index.tsx'), // 入口文件
@@ -12,18 +13,60 @@ module.exports = {
   },
   module: {
     rules: [{
-      test: /.(ts|tsx)$/, // 匹配.ts, tsx文件,使webpack可以识别jsx语法
-      use: {
-        loader: 'babel-loader',
-        options: {
-          // 预设执行顺序由右往左,所以先处理ts,再处理jsx
-          presets: [
-            '@babel/preset-react',
-            '@babel/preset-typescript'
-          ]
-        }
+        test: /.(ts|tsx)$/,
+        use: 'babel-loader'
+      },
+      // 如果node_moduels中也有要处理的语法，可以把js|jsx文件配置加上
+      // {
+      //  test: /.(js|jsx)$/,
+      //  use: 'babel-loader'
+      // }
+      {
+        test: /.(css|less)$/, //匹配 css和less 文件
+        use: [
+          'style-loader',
+          'css-loader',
+          'postcss-loader',
+          'less-loader'
+        ]
+      },
+      {
+        test: /.(png|jpg|jpeg|gif|svg)$/, // 匹配图片文件
+        type: "asset", // type选择asset
+        parser: {
+          dataUrlCondition: {
+            maxSize: 10 * 1024, // 小于10kb转base64位
+          }
+        },
+        generator: {
+          filename: 'static/images/[name][ext]', // 文件输出目录和命名
+        },
+      },
+      {
+        test: /.(woff2?|eot|ttf|otf)$/, // 匹配字体图标文件
+        type: "asset", // type选择asset
+        parser: {
+          dataUrlCondition: {
+            maxSize: 10 * 1024, // 小于10kb转base64位
+          }
+        },
+        generator: {
+          filename: 'static/fonts/[name][ext]', // 文件输出目录和命名
+        },
+      },
+      {
+        test: /.(mp4|webm|ogg|mp3|wav|flac|aac)$/, // 匹配媒体文件
+        type: "asset", // type选择asset
+        parser: {
+          dataUrlCondition: {
+            maxSize: 10 * 1024, // 小于10kb转base64位
+          }
+        },
+        generator: {
+          filename: 'static/media/[name][ext]', // 文件输出目录和命名
+        },
       }
-    }]
+    ]
   },
   resolve: {
     extensions: ['.js', '.tsx', '.ts'], // 引入模块时可以不带文件后缀
@@ -32,6 +75,9 @@ module.exports = {
     new HtmlWebpackPlugin({
       template: path.resolve(__dirname, '../public/index.html'), // 模板取定义root节点的模板
       inject: true, // 自动注入静态资源
+    }),
+    new webpack.DefinePlugin({ // 注入环境变量
+      'process.env.BASE_ENV': JSON.stringify(process.env.BASE_ENV)
     })
   ]
 }
