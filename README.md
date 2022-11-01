@@ -27,4 +27,6 @@ serve -s dist
 
 ### Unknown rule function-calc-no-invalid.Stylelint(function-calc-no-invalid) ?
 
+stylelint 14.0 版本开始,删除了 function-calc-no-invalid,所以需要更新 stylelint-config-standard
+
 npm i stylelint-config-standard : 更新 stylelint-config-standard 的版本即可
