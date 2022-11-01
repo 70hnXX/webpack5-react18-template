@@ -6,6 +6,7 @@ webpack 配置参考[【前端工程化】webpack5 从零搭建完整的 react18
 
 - npm install -g eslint
 - npm i serve -g
+- npm i commitizen -g
 
 ### 需要安装的 vscode 插件
 
