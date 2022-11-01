@@ -14,9 +14,17 @@ webpack 配置参考[【前端工程化】webpack5 从零搭建完整的 react18
 - Prettier - Code formatter
 - ESLint
 
+### 使用 git cz ?
+
+将文件添加进暂存区后,可以使用 git cz 代替 git commit 和 git push
+
 ### 打包后启动服务
 
 ```
 npm i serve -g
 serve -s dist
 ```
+
+### Unknown rule function-calc-no-invalid.Stylelint(function-calc-no-invalid) ?
+
+npm i stylelint-config-standard : 更新 stylelint-config-standard 的版本即可
