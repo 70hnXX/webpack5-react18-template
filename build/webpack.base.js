@@ -1,83 +1,106 @@
 const path = require('path')
-const webpack = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin')
-// const MiniCssExtractPlugin = require('mini-css-extract-plugin')
+const MiniCssExtractPlugin = require('mini-css-extract-plugin')
+const webpack = require('webpack');
+
+const isDev = process.env.NODE_ENV === 'development'
 
 module.exports = {
-  entry: path.join(__dirname, '../src/index.tsx'), // 入口文件
-  output: { // 打包文件出口
-    filename: 'static/js/[name].js', // 每个输出js的名称
-    path: path.join(__dirname, '../dist'), // 打包结果输出路径
-    clean: true, // webpack4需要配置clean-webpack-plugin来删除dist文件,webpack5内置了
-    publicPath: '/' // 打包后文件的公共前缀路径
+  // 入口文件
+  entry: path.resolve(__dirname, '../src/index.tsx'),
+  // 打包文件出口
+  output: {
+    filename: 'static/js/[name].[chunkhash:8].js', // 每个输出js的名称
+    path: path.resolve(__dirname, '../dist'), // 打包的出口文件夹路径
+    clean: true, // webpack4需要配置clean-webpack-plugin删除dist文件，webpack5内置了。
+    publicPath: '/', // 打包后文件的公共前缀路径
   },
   module: {
-    rules: [{
-        test: /.(ts|tsx)$/,
-        use: 'babel-loader'
-      },
-      // 如果node_moduels中也有要处理的语法，可以把js|jsx文件配置加上
-      // {
-      //  test: /.(js|jsx)$/,
-      //  use: 'babel-loader'
-      // }
+    rules: [
       {
-        test: /.(css|less)$/, //匹配 css和less 文件
+        test: /\.css$/, //匹配所有的 less 文件
+        enforce: 'pre',
+        include: [path.resolve(__dirname, '../src')],
         use: [
-          'style-loader',
+          isDev ? 'style-loader' : MiniCssExtractPlugin.loader,
+          'css-loader',
+          'postcss-loader',
+        ]
+      },
+      {
+        test: /\.less$/, //匹配所有的 less 文件
+        enforce: 'pre',
+        include: [path.resolve(__dirname, '../src')],
+        use: [
+          isDev ? 'style-loader' : MiniCssExtractPlugin.loader,
           'css-loader',
           'postcss-loader',
           'less-loader'
         ]
       },
       {
-        test: /.(png|jpg|jpeg|gif|svg)$/, // 匹配图片文件
-        type: "asset", // type选择asset
+        test: /\.(ts|tsx)$/,
+        include: [path.resolve(__dirname, '../src')],
+        enforce: 'pre',
+        use: ['thread-loader', 'babel-loader']
+      },
+      {
+        test:/\.(png|jpg|jpeg|gif|svg)$/,
+        type: "asset",
         parser: {
+          //转base64的条件
           dataUrlCondition: {
-            maxSize: 10 * 1024, // 小于10kb转base64位
+            maxSize: 10 * 1024, // 10kb
           }
         },
-        generator: {
-          filename: 'static/images/[name][ext]', // 文件输出目录和命名
+        generator:{ 
+          filename:'static/images/[name].[contenthash:6][ext]'
         },
       },
       {
-        test: /.(woff2?|eot|ttf|otf)$/, // 匹配字体图标文件
+        test:/\.(woff2?|eot|ttf|otf)$/, // 匹配字体图标文件
         type: "asset", // type选择asset
         parser: {
           dataUrlCondition: {
             maxSize: 10 * 1024, // 小于10kb转base64位
           }
         },
-        generator: {
-          filename: 'static/fonts/[name][ext]', // 文件输出目录和命名
+        generator:{ 
+          filename:'static/fonts/[name].[contenthash:6][ext]', // 文件输出目录和命名
         },
       },
       {
-        test: /.(mp4|webm|ogg|mp3|wav|flac|aac)$/, // 匹配媒体文件
+        test:/\.(mp4|webm|ogg|mp3|wav|flac|aac)$/, // 匹配媒体文件
         type: "asset", // type选择asset
         parser: {
           dataUrlCondition: {
             maxSize: 10 * 1024, // 小于10kb转base64位
           }
         },
-        generator: {
-          filename: 'static/media/[name][ext]', // 文件输出目录和命名
+        generator:{ 
+          filename:'static/media/[name].[contenthash:6][ext]', // 文件输出目录和命名
         },
       }
     ]
   },
   resolve: {
-    extensions: ['.js', '.tsx', '.ts'], // 引入模块时可以不带文件后缀
+    extensions: ['.js', '.tsx', '.ts'],
+    alias: {
+      '@': path.resolve(__dirname, '../src')
+    },
+    modules: [path.resolve(__dirname, '../node_modules')],
   },
   plugins: [
     new HtmlWebpackPlugin({
-      template: path.resolve(__dirname, '../public/index.html'), // 模板取定义root节点的模板
-      inject: true, // 自动注入静态资源
+      template: path.resolve(__dirname, '../public/index.html'),
+      inject: true
     }),
-    new webpack.DefinePlugin({ // 注入环境变量
+    new webpack.DefinePlugin({
       'process.env.BASE_ENV': JSON.stringify(process.env.BASE_ENV)
-    })
-  ]
+    }),
+  ],
+  // 开启webpack持久化存储缓存
+  cache: {
+    type: 'filesystem', // 使用文件缓存
+  },
 }
